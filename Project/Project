@@ -1,0 +1,165 @@
+CREATE DATABASE Ramadan_Distributions;
+USE Ramadan_Distributions;
+
+CREATE TABLE Users (
+    user_id INT PRIMARY KEY AUTO_INCREMENT,
+    full_name VARCHAR(100) NOT NULL,
+    gender ENUM('Male','Female'),
+    age INT,
+    phone VARCHAR(11),
+    address VARCHAR(200),
+    role ENUM('Admin' , 'Volunteer' , 'Driver' , 'Beneficiary') NOT NULL
+);
+
+CREATE TABLE Warehouses (
+    warehouse_id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    location VARCHAR(200),
+    max_capacity INT,
+    current_status ENUM('Open' ,'Full' , 'Maintenance'),
+    supervisor_id INT,
+    Foreign Key (supervisor_id) REFERENCES Users(user_id)
+);
+
+CREATE TABLE Food_Categories (
+    category_id INT PRIMARY KEY AUTO_INCREMENT,
+    category_name ENUM('Dry','Fresh','cooked'),
+    required_storage_temp DECIMAL(5,2)
+);
+
+CREATE TABLE Inventory_Items( 
+    item_id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    quantity_kg DECIMAL(10,2),
+    warehouse_id INT NOT NULL,
+    expiry_date DATE,
+    category_id INT,
+    Foreign Key (warehouse_id) REFERENCES Warehouses(warehouse_id),
+    Foreign Key (category_id) REFERENCES Food_Categories(category_id)
+
+);
+
+CREATE TABLE Donations_Log (
+    donation_id INT PRIMARY KEY AUTO_INCREMENT,
+    donor_name VARCHAR(100),
+    amount_value DECIMAL(10,2),
+    donation_type ENUM('Cash','Food'),
+    org_type ENUM('Individual','Company','NGO')
+ );
+
+CREATE TABLE Beneficiary_Details(
+    beneficiary_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT UNIQUE,
+    family_members_count INT,
+    poverty_score INT CHECK (poverty_score BETWEEN 1 AND 10),
+    last_received_date DATE,
+    Foreign Key (user_id) REFERENCES Users(user_id)
+);
+
+CREATE TABLE Volunteer_Skills(
+    skill_id INT PRIMARY KEY AUTO_INCREMENT,
+    volunteer_id INT,
+    skill_type ENUM('Cooking','Driving','Data Entry'),
+    years_of_experience INT,
+    Foreign Key (volunteer_id) REFERENCES Users(user_id)
+);
+
+CREATE TABLE Training_Session (
+    session_id INT PRIMARY KEY AUTO_INCREMENT,
+    session_name VARCHAR(40),
+    trainer_name VARCHAR(20),
+    session_date DATE
+ );
+
+CREATE TABLE Driver_Training(
+    driver_id INT,
+    session_id INT,
+    PRIMARY KEY (driver_id , session_id),
+    Foreign Key (driver_id) REFERENCES Users(user_id),
+    Foreign Key (session_id) REFERENCES Training_Session(session_id)
+ );
+
+INSERT INTO Users (full_name, gender, age, phone, address, role) VALUES
+('Ahmed Ali', 'Male', 35, '01011112222', 'Cairo, Egypt', 'Admin'),
+('Sara Mohamed', 'Female', 28, '01033334444', 'Sharkia, Egypt', 'Volunteer'),
+('Hassan Said', 'Male', 40, '01055556666', 'Sharkia, Egypt', 'Driver'),
+('Fatma Youssef', 'Female', 30, '01077778888', 'Sharkia, Egypt', 'Beneficiary'),
+('Mohamed Tamer', 'Male', 45, '01099990000', 'Sharkia, Egypt', 'Driver'),
+('Nour El-Din', 'Male', 25, '01022223333', 'Sharkia, Egypt', 'Volunteer'),
+('Aisha Kamal', 'Female', 32, '01044445555', 'Sharkia, Egypt', 'Beneficiary');
+
+INSERT INTO Warehouses (name, location, max_capacity, current_status, supervisor_id) VALUES
+('Main Warehouse', 'Sharkia, Zagazig', 10000, 'Open', 1),
+('Cold Storage 1', 'Sharkia, Belbes', 5000, 'Full', 1),
+('Cold Storage 2', 'Sharkia, 10th District', 3000, 'Maintenance', 1);
+
+INSERT INTO Food_Categories (category_name, required_storage_temp) VALUES
+('Dry', 25.00),
+('Fresh', 4.00),
+('cooked', 60.00);
+
+INSERT INTO Inventory_Items (name, quantity_kg, warehouse_id, expiry_date, category_id) VALUES
+('Rice', 1000, 1, '2026-06-30', 1),
+('Pasta', 500, 1, '2026-07-15', 1),
+('Chicken', 200, 2, '2026-03-15', 2),
+('Beef', 150, 2, '2026-03-20', 2),
+('Cooked Lentils', 50, 3, '2026-03-12', 3);
+
+INSERT INTO Donations_Log (donor_name, amount_value, donation_type, org_type) VALUES
+('Ali Hassan', 5000, 'Cash', 'Individual'),
+('ABC Company', 200, 'Food', 'Company'),
+('Helping Hands NGO', 1000, 'Food', 'NGO');
+
+INSERT INTO Beneficiary_Details (user_id, family_members_count, poverty_score, last_received_date) VALUES
+(4, 5, 9, '2026-02-20'),
+(7, 3, 6, '2026-02-18');
+
+INSERT INTO Volunteer_Skills (volunteer_id, skill_type, years_of_experience) VALUES
+(2, 'Cooking', 5),
+(2, 'Data Entry', 2),
+(6, 'Driving', 3);
+
+INSERT INTO Training_Session (session_name, trainer_name, session_date) VALUES
+('Safety First', 'Ahmed Ali', '2026-03-05'),
+('Emergency Handling', 'Sara Mohamed', '2026-03-06');
+
+INSERT INTO Driver_Training (driver_id, session_id) VALUES
+(3, 1),  -- حسن  حضر Safety First
+(5, 1),  -- محمد تامر  حضر Safety First
+(3, 2);  -- حسن حضر Emergency Handling
+
+
+-- This queries JUST for TEST
+SELECT * FROM Users;
+
+-- All Benefitecal
+SELECT u.full_name, u.role, b.family_members_count, b.poverty_score, b.last_received_date
+FROM Users u
+JOIN Beneficiary_Details b ON u.user_id = b.user_id;
+
+-- All Warehouse
+SELECT w.name AS warehouse_name, w.location, w.current_status, u.full_name AS supervisor
+FROM Warehouses w
+JOIN Users u ON w.supervisor_id = u.user_id;
+
+-- All item in warehouse and category
+SELECT i.name AS item_name, i.quantity_kg, i.expiry_date, w.name AS warehouse_name, f.category_name
+FROM Inventory_Items i
+JOIN Warehouses w ON i.warehouse_id = w.warehouse_id
+JOIN Food_Categories f ON i.category_id = f.category_id;
+
+-- all donor
+SELECT donor_name, amount_value, donation_type, org_type
+FROM Donations_Log;
+
+-- all volunteer
+SELECT u.full_name, v.skill_type, v.years_of_experience
+FROM Users u
+JOIN Volunteer_Skills v ON u.user_id = v.volunteer_id;
+
+-- all driver
+SELECT u.full_name AS driver_name, t.session_name, t.trainer_name, t.session_date
+FROM Users u
+JOIN Driver_Training dt ON u.user_id = dt.driver_id
+JOIN Training_Session t ON dt.session_id = t.session_id
+WHERE u.role = 'Driver';
