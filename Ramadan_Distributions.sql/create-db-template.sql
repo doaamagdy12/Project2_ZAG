@@ -79,6 +79,24 @@ CREATE TABLE Driver_Training (
     FOREIGN KEY (session_id) REFERENCES Training_Session(session_id)
 );
 
+CREATE TABLE Shipments (
+    shipment_id INT PRIMARY KEY AUTO_INCREMENT,
+    item_id INT NOT NULL,
+    quantity_kg DECIMAL(10,2) NOT NULL,
+    shipment_date DATE NOT NULL,
+    destination VARCHAR(200),
+    FOREIGN KEY (item_id) REFERENCES Inventory_Items(item_id)
+);
+
+CREATE INDEX idx_users_role_address
+ON Users(role, address);
+
+CREATE INDEX idx_beneficiary_poverty_last_received
+ON Beneficiary_Details(poverty_score, last_received_date);
+
+CREATE INDEX idx_inventory_category_expiry_warehouse
+ON Inventory_Items(category_id, expiry_date, warehouse_id);
+
 INSERT INTO Users (full_name, gender, age, phone, address, role) VALUES
 ('Ahmed Ali', 'Male', 35, '01011112222', 'Cairo, Egypt', 'Admin'),
 ('Omar Farouk', 'Male', 38, '01066667777', 'Sharkia, Egypt', 'Driver'),
