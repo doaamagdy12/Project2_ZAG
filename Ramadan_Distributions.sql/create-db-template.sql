@@ -179,7 +179,7 @@ INSERT INTO Driver_Training (driver_id, session_id) VALUES
 (6, 1),   -- Mohamed Tamer attended Safety First
 (4, 2);   -- Hassan Said attended Emergency Handling
 
--- 1
+-- 1 Find all "Fresh" food items in "Zagazig Warehouse" expiring in the next 48hours.
 SELECT II.name
 FROM Inventory_Items II
 JOIN Food_Categories FC ON II.category_id = FC.category_id
@@ -188,7 +188,7 @@ WHERE FC.category_name = 'Fresh'
   AND W.name = 'Zagazig Warehouse'
   AND II.expiry_date <= '2026-03-15';
 
--- 2
+-- 2 List the names of all "Drivers" who have NOT yet completed the "Safety First" training.
 SELECT U.full_name
 FROM Users U
 LEFT JOIN Driver_Training DT
@@ -196,7 +196,7 @@ LEFT JOIN Driver_Training DT
 WHERE U.role = 'Driver'
   AND DT.session_id IS NULL;
 
--- 3
+-- 3 Find all families in "Minya Al-Qamh" with a poverty_score > 8 who haven't received a box in the last 15 days.
 SELECT U.full_name
 FROM Users U
 JOIN Beneficiary_Details BD ON U.user_id = BD.user_id
@@ -205,7 +205,7 @@ WHERE U.role = 'Beneficiary'
   AND BD.poverty_score > 8
   AND BD.last_received_date < '2026-02-26';
 
--- 4
+-- 4 Calculate the total "Cash" donation value from "Companies" vs. "Individuals."
 SELECT
     (SELECT SUM(D.amount_value)
      FROM Donations_Log D
