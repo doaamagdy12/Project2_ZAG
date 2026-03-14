@@ -97,6 +97,30 @@ ON Beneficiary_Details(poverty_score, last_received_date);
 CREATE INDEX idx_inventory_category_expiry_warehouse
 ON Inventory_Items(category_id, expiry_date, warehouse_id);
 
+-- Trigger to prevent shipping expired food
+
+DELIMITER $$
+
+CREATE TRIGGER prevent_expired_food_shipment
+BEFORE INSERT ON Shipments
+FOR EACH ROW
+BEGIN
+    DECLARE exp_date DATE;
+
+    SELECT expiry_date
+    INTO exp_date
+    FROM Inventory_Items
+    WHERE item_id = NEW.item_id;
+
+    IF exp_date < CURDATE() THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Cannot ship expired food item';
+    END IF;
+
+END$$
+
+DELIMITER ;
+
 INSERT INTO Users (full_name, gender, age, phone, address, role) VALUES
 ('Ahmed Ali', 'Male', 35, '01011112222', 'Cairo, Egypt', 'Admin'),
 ('Omar Farouk', 'Male', 38, '01066667777', 'Sharkia, Egypt', 'Driver'),
@@ -192,4 +216,3 @@ SELECT
      FROM Donations_Log D
      WHERE D.donation_type = 'Cash'
        AND D.org_type = 'Individual') AS total_donations_individuals;
-       
