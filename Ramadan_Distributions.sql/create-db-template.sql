@@ -203,7 +203,7 @@ JOIN Beneficiary_Details BD ON U.user_id = BD.user_id
 WHERE U.role = 'Beneficiary'
   AND U.address = 'Minya Al-Qamh'
   AND BD.poverty_score > 8
-  AND BD.last_received_date < '2026-02-26';
+  AND BD.last_received_date < DATE_SUB(CURDATE(), INTERVAL 15 DAY);
 
 -- 4 Calculate the total "Cash" donation value from "Companies" vs. "Individuals."
 SELECT
