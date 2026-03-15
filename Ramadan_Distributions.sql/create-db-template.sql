@@ -186,7 +186,7 @@ JOIN Food_Categories FC ON II.category_id = FC.category_id
 JOIN Warehouses W ON II.warehouse_id = W.warehouse_id
 WHERE FC.category_name = 'Fresh'
   AND W.name = 'Zagazig Warehouse'
-  AND II.expiry_date <= '2026-03-15';
+  AND II.expiry_date <= DATE_ADD(CURDATE(), INTERVAL 2 DAY);
 
 -- 2 List the names of all "Drivers" who have NOT yet completed the "Safety First" training.
 SELECT U.full_name
